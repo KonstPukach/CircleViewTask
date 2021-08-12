@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <view
+        xmlns:custom="http://schemas.android.com/apk/res/com.example.circleviewtask"
+        class="com.example.circleviewtask.circleview.CircleView"
+        android:id="@+id/circle_view"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_centerVertical="true"
+        custom:circle_radius="50dp"
+        custom:circle_shadow_radius="10dp"
+        custom:scale_on_click="1.2"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true">
+        <Button
+            android:id="@+id/btn_change_part_amount"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:text="@string/add" />
+
+        <Button
+            android:id="@+id/btn_change_color"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:text="@string/color"/>
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/seek_bar_change_radius"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:min="20"
+        android:max="400"/>
+</RelativeLayout>
