@@ -31,9 +31,6 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
         get() = _circleIcons
 
-    private var pivX: Float = 0F    // x center of the circle
-    private var pivY: Float = 0F    // y center of the circle
-
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = BORDER_STROKE_WIDTH
@@ -88,8 +85,8 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                     val center = getSectorCenter(i)
                     it.paint.setShadowLayer(
                         value,
-                        (center.first - pivX) / SHADOW_DIRECTION_DIV,
-                        (center.second - pivX) / SHADOW_DIRECTION_DIV,
+                        (center.first - pivotX) / SHADOW_DIRECTION_DIV,
+                        (center.second - pivotY) / SHADOW_DIRECTION_DIV,
                         SHADOW_COLOR
                     )
                 }
@@ -143,7 +140,7 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         _circleIcons.add(icon)
         sectorsAmount = _circleIcons.size
         if (sectorsList.isNotEmpty()) {
-            _items.add(Item(icon, getBitmap(icon) ?: defaultIcon))
+            _items.add(Item(icon, getBitmap(context, icon, defaultIconSizePx) ?: defaultIcon))
             sectorsList.add(createSector(
                 sectorsAmount - 1, getSectorCenter(sectorsAmount - 1)
             ))
@@ -177,8 +174,8 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     private fun animateSectorOnClick(sectorIndex: Int) {
         val shadowDirection = getSectorCenter(sectorIndex)
-        val shadowDirectionX = (shadowDirection.first - pivX) / SHADOW_DIRECTION_DIV
-        val shadowDirectionY = (shadowDirection.second - pivY) / SHADOW_DIRECTION_DIV
+        val shadowDirectionX = (shadowDirection.first - pivotX) / SHADOW_DIRECTION_DIV
+        val shadowDirectionY = (shadowDirection.second - pivotY) / SHADOW_DIRECTION_DIV
 
         sectorsList[sectorIndex].animatorOnClick?.cancel()  // cancel previous animation
 
@@ -295,29 +292,11 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private fun initItems() {
         _items.clear()
         for (i in 0 until sectorsAmount) {
-            _items.add(Item(_circleIcons[i], getBitmap(_circleIcons[i]) ?: defaultIcon))
+            _items.add(
+                Item(_circleIcons[i],
+                getBitmap(context, _circleIcons[i], defaultIconSizePx) ?: defaultIcon)
+            )
         }
-    }
-
-    // Build Bitmap instance from a drawable icon id
-    private fun getBitmap(r: Int): Bitmap? {
-        val drawable = AppCompatResources.getDrawable(context, r)
-        if (drawable is BitmapDrawable) {
-            return drawable.bitmap.scale(defaultIconSizePx, defaultIconSizePx)
-        } else {
-            drawable?.let { dr ->
-                val bitmap = Bitmap.createBitmap(
-                    defaultIconSizePx,
-                    defaultIconSizePx,
-                    Bitmap.Config.ARGB_8888
-                )
-                val canvas = Canvas(bitmap)
-                dr.setBounds(0, 0, canvas.width, canvas.height)
-                dr.draw(canvas)
-                return bitmap
-            }
-        }
-        return null
     }
 
     private fun initSectorsList() {
@@ -331,18 +310,18 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private fun createSector(sectorIndex: Int, center: Pair<Float, Float>): Sector {
         return Sector(
             circle = RectF(
-                pivX - radius,
-                pivY - radius,
-                pivX + radius,
-                pivY + radius
+                pivotX - radius,
+                pivotY - radius,
+                pivotX + radius,
+                pivotY + radius
             ),
             paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = circleColor
                 style = Paint.Style.FILL
                 setShadowLayer(
                     shadowRadius,
-                    (center.first - pivX) / SHADOW_DIRECTION_DIV,
-                    (center.second - pivY) / SHADOW_DIRECTION_DIV,
+                    (center.first - pivotX) / SHADOW_DIRECTION_DIV,
+                    (center.second - pivotY) / SHADOW_DIRECTION_DIV,
                     SHADOW_COLOR
                 )
             },
@@ -355,24 +334,24 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         for (i in 0 until sectorsAmount) {
             _items[i] = _items[i].copy(
                 icon = _circleIcons[i],
-                bitmap = getBitmap(_circleIcons[i]) ?: defaultIcon
+                bitmap = getBitmap(context, _circleIcons[i], defaultIconSizePx) ?: defaultIcon
             )
 
             val center = getSectorCenter(i)
             sectorsList[i] = sectorsList[i].copy(
                 circle = RectF(
-                    pivX - radius,
-                    pivY - radius,
-                    pivX + radius,
-                    pivY + radius
+                    pivotX - radius,
+                    pivotY - radius,
+                    pivotX + radius,
+                    pivotY + radius
                 ),
                 paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                     color = sectorsList[i].paint.color
                     style = Paint.Style.FILL
                     setShadowLayer(
                         shadowRadius,
-                        (center.first - pivX) / SHADOW_DIRECTION_DIV,
-                        (center.second - pivY) / SHADOW_DIRECTION_DIV,
+                        (center.first - pivotX) / SHADOW_DIRECTION_DIV,
+                        (center.second - pivotY) / SHADOW_DIRECTION_DIV,
                         SHADOW_COLOR
                     )
                 },
@@ -391,16 +370,13 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        pivY = pivotY
-        pivX = pivotX
+        super.onSizeChanged(w, h, oldw, oldh)
 
         // calculates width considering that it will be scaled by the click and + shadow radius
         val minWidth = paddingLeft + paddingRight + (radius + shadowRadius) * 2 * scaleOnClick
         if (minWidth > min(w, h)) {
             radius = (min(w, h) - paddingRight - paddingLeft) / 2F / scaleOnClick - shadowRadius
         }
-
-        super.onSizeChanged(w, h, oldw, oldh)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -419,22 +395,22 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     // Returns an index of chosen sector
     private fun getSectorClicked(x: Float, y: Float): Int {
         // check the click on the view or past the view
-        val distanceToCenter = (pivX - x).pow(2)  + (pivY - y).pow(2)
+        val distanceToCenter = (pivotX - x).pow(2)  + (pivotY - y).pow(2)
         val isInView: Boolean = distanceToCenter <= radius * radius
         val isInScaledView: Boolean = distanceToCenter <= radius.pow(2) * scaleOnClick.pow(2)
 
         if (isInScaledView) {
-            val tanAlpha: Float = (pivY - y) / (pivX - x)
+            val tanAlpha: Float = (pivotY - y) / (pivotX - x)
             var degrees = atan(tanAlpha.toDouble()) * HALF_CIR_DEGREES / PI // convert to degrees
 
             // calculate what the quoter was clicked (for the trigonometrical circle)
-            if (x - pivX < 0 && y - pivY > 0) {     // 2nd quoter
+            if (x - pivotX < 0 && y - pivotY > 0) {     // 2nd quoter
                 degrees += HALF_CIR_DEGREES
             }
-            if (x - pivX < 0 &&  y - pivY < 0) {    // 3d quoter
+            if (x - pivotX < 0 &&  y - pivotY < 0) {    // 3d quoter
                 degrees += HALF_CIR_DEGREES
             }
-            if (x - pivX > 0 && y - pivY < 0) {     // 4th quoter
+            if (x - pivotX > 0 && y - pivotY < 0) {     // 4th quoter
                 degrees += FULL_CIR_DEGREES
             }
 
@@ -464,8 +440,8 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
         val sinA = sin(degrees * PI / HALF_CIR_DEGREES)
         val cosA = cos(degrees * PI / HALF_CIR_DEGREES)
-        val resX = pivX + (radius * ICON_RELATIVE_START_POS) * cosA
-        val resY = pivY + (radius * ICON_RELATIVE_START_POS) * sinA
+        val resX = pivotX + (radius * ICON_RELATIVE_START_POS) * cosA
+        val resY = pivotY + (radius * ICON_RELATIVE_START_POS) * sinA
         return Pair(resX.toFloat(), resY.toFloat())
     }
 
