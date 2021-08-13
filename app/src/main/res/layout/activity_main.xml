@@ -14,8 +14,8 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:layout_centerVertical="true"
-        custom:circle_radius="50dp"
-        custom:circle_shadow_radius="10dp"
+        custom:circle_radius="100dp"
+        custom:circle_shadow_radius="40dp"
         custom:scale_on_click="1.2"/>
 
     <LinearLayout
