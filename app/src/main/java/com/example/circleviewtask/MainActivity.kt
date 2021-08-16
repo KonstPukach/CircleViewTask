@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         val seekBarChangeRadius: SeekBar = findViewById(R.id.seek_bar_change_radius)
 
         circleView.items = listOf(
-            CircleView.Item(R.drawable.icon_sun, true),
+            CircleView.Item(R.drawable.icon_sun),
             CircleView.Item(R.drawable.ic_web),
             CircleView.Item(R.drawable.ic_baseline_brightness_low_24),
             CircleView.Item(R.drawable.ic_baseline_brightness_high_24),

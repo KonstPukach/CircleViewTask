@@ -64,9 +64,9 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         set(value) {
             field = value
             if (sectorsList.isNotEmpty())
-                sectorsList.map {
+                sectorsList.mapIndexed { i, it ->
                     it.paint.color =
-                        if (it.checked) changeColor(it.scale)
+                        if (_items[i].checked) changeColor(it.scale)
                         else value
                 }
             invalidate()
@@ -168,7 +168,7 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         sectorsList[sectorIndex].animatorOnClick?.cancel()  // cancel previous animation
 
         val destScale: Float =    // destination animation scale
-            if (sectorsList[sectorIndex].checked) 1F
+            if (_items[sectorIndex].checked) 1F
             else scaleOnClick
 
         val anim = ObjectAnimator.ofFloat(
@@ -211,7 +211,6 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
         sectorsList[sectorIndex] = sectorsList[sectorIndex].copy(
             animatorOnClick = anim,
-            checked = !sectorsList[sectorIndex].checked
         )
 
         _items[sectorIndex] = _items[sectorIndex].copy(
@@ -320,7 +319,6 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             },
             icon = createIcon(center, item, false),
             scaledIcon = createIcon(center, item, item.checked),
-            checked = item.checked,
             scale =
                 if (item.checked) scaleOnClick
                 else 1F
@@ -420,7 +418,7 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                     break
                 }
             }
-            if (isInView || sectorsList[sectorIndex].checked)
+            if (isInView || _items[sectorIndex].checked)
                 return sectorIndex
         }
 
@@ -445,7 +443,6 @@ class CircleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         val icon: Icon,
         val scaledIcon: Icon = icon,
         val animatorOnClick: ObjectAnimator? = null,
-        val checked: Boolean = false,
         val scale: Float = 1F
     ) {
         fun getScaledCircle(radius: Float): RectF {
